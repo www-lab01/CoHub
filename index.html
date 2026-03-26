@@ -1,149 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>DevVault IDE</title>
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Prism -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-java.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollegeHub - Your College Social Network</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-graduation-cap"></i>
+                <span>CollegeHub</span>
+            </div>
+            <div class="nav-search">
+                <input type="text" id="searchInput" placeholder="Search posts, people...">
+                <i class="fas fa-search"></i>
+            </div>
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-tab="feed"><i class="fas fa-home"></i> Feed</button>
+                <button class="nav-tab" data-tab="notes"><i class="fas fa-book"></i> Notes</button>
+                <button class="nav-tab" data-tab="youtube"><i class="fab fa-youtube"></i> Videos</button>
+                <button class="nav-tab" data-tab="chat"><i class="fab fa-whatsapp"></i> Chat</button>
+                <button class="nav-tab" data-tab="updates"><i class="fas fa-bullhorn"></i> Updates</button>
+                <button class="nav-tab" data-tab="complaints"><i class="fas fa-exclamation-triangle"></i> Complaints</button>
+            </div>
+            <div class="nav-user">
+                <img src="https://via.placeholder.com/40" alt="Profile" id="userAvatar" class="avatar">
+                <span id="userName">Student</span>
+                <div class="dropdown">
+                    <button class="dropdown-btn"><i class="fas fa-chevron-down"></i></button>
+                    <div class="dropdown-content">
+                        <a href="#" id="profileBtn"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#" id="settingsBtn"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-<body class="bg-[#1e1e1e] text-white flex h-screen">
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Feed Tab -->
+        <div id="feed" class="tab-content active">
+            <div class="create-post">
+                <textarea id="postContent" placeholder="What's happening in college today? 📚✨"></textarea>
+                <div class="post-actions">
+                    <input type="file" id="postImage" accept="image/*" style="display:none">
+                    <button onclick="document.getElementById('postImage').click()">
+                        <i class="fas fa-image"></i> Photo
+                    </button>
+                    <button onclick="createPost()">Post</button>
+                </div>
+            </div>
+            <div id="postsContainer" class="posts-container"></div>
+        </div>
 
-<!-- SIDEBAR -->
-<div class="w-60 bg-[#252526] p-3 overflow-y-auto">
-  <h2 class="font-bold mb-3">📁 Explorer</h2>
-  <div id="fileTree"></div>
-</div>
+        <!-- Notes Tab -->
+        <div id="notes" class="tab-content">
+            <div class="notes-header">
+                <h2>📚 Study Notes</h2>
+                <button class="btn-primary" onclick="showNoteModal()">+ New Note</button>
+            </div>
+            <div id="notesContainer" class="notes-grid"></div>
+        </div>
 
-<!-- MAIN -->
-<div class="flex-1 flex flex-col">
+        <!-- YouTube Tab -->
+        <div id="youtube" class="tab-content">
+            <div class="video-header">
+                <h2>🎥 College Videos</h2>
+                <button class="btn-primary" onclick="showVideoModal()">+ Upload Video</button>
+            </div>
+            <div id="videosContainer" class="videos-grid"></div>
+        </div>
 
-  <!-- TABS -->
-  <div id="tabs" class="flex bg-[#2d2d2d] px-2"></div>
+        <!-- Chat Tab -->
+        <div id="chat" class="tab-content">
+            <div class="chat-header">
+                <h2>💬 College Chat</h2>
+                <select id="chatRooms">
+                    <option value="general">General Chat</option>
+                    <option value="cs">Computer Science</option>
+                    <option value="mech">Mechanical</option>
+                    <option value="ece">ECE</option>
+                </select>
+            </div>
+            <div id="chatMessages" class="chat-messages"></div>
+            <div class="chat-input">
+                <input type="text" id="chatInput" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
 
-  <!-- EDITOR -->
-  <textarea id="editor" class="flex-1 bg-[#1e1e1e] p-4 font-mono"></textarea>
+        <!-- Updates Tab -->
+        <div id="updates" class="tab-content">
+            <div class="updates-header">
+                <h2>📢 Official Updates</h2>
+            </div>
+            <div id="updatesContainer"></div>
+        </div>
 
-  <!-- ACTION BAR -->
-  <div class="bg-[#252526] p-2 flex gap-2">
-    <button onclick="saveFile()" class="bg-green-600 px-3 py-1 rounded">Save</button>
-    <button onclick="newFile()" class="bg-blue-600 px-3 py-1 rounded">New</button>
-    <button onclick="runJS()" class="bg-yellow-500 px-3 py-1 rounded">Run JS</button>
-  </div>
+        <!-- Complaints Tab -->
+        <div id="complaints" class="tab-content">
+            <div class="complaints-header">
+                <h2>⚠️ Complaints & Feedback</h2>
+                <button class="btn-warning" onclick="showComplaintModal()">+ New Complaint</button>
+            </div>
+            <div id="complaintsContainer"></div>
+        </div>
+    </main>
 
-  <!-- OUTPUT -->
-  <div id="output" class="bg-black p-3 text-green-400 text-sm h-32 overflow-auto"></div>
+    <!-- Modals -->
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>New Study Note</h3>
+            <input type="text" id="noteTitle" placeholder="Note Title">
+            <textarea id="noteContent" placeholder="Note content..."></textarea>
+            <select id="noteSubject">
+                <option value="cs">Computer Science</option>
+                <option value="math">Mathematics</option>
+                <option value="physics">Physics</option>
+            </select>
+            <button onclick="saveNote()">Save Note</button>
+        </div>
+    </div>
 
-</div>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal active">
+        <div class="modal-content login-modal">
+            <h2>Welcome to CollegeHub</h2>
+            <input type="text" id="loginStudentId" placeholder="Student ID">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">Login</button>
+            <p>Demo: ID: STUDENT001, Pass: 123456</p>
+        </div>
+    </div>
 
-<script>
-const API_KEY = "$2a$10$5SepU9r2PraMpGxplhm/Cu7O03sM2xA4p32tLGV0dQzhrnwl1S33K";
-const BIN_ID = "69c2c25eb7ec241ddc9c01f5";
-
-let files = [];
-let openTabs = [];
-let currentFile = null;
-
-// LOAD
-async function loadFiles(){
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-    headers: {"X-Master-Key": API_KEY}
-  });
-  const data = await res.json();
-  files = data.record.codes || [];
-  renderTree();
-}
-
-// TREE
-function renderTree(){
-  const tree = document.getElementById("fileTree");
-  tree.innerHTML = "";
-
-  files.forEach((f,i)=>{
-    const div = document.createElement("div");
-    div.innerText = "📄 " + f.title;
-    div.className = "cursor-pointer hover:bg-gray-700 p-1";
-    div.onclick = ()=>openFile(i);
-    tree.appendChild(div);
-  });
-}
-
-// OPEN FILE
-function openFile(i){
-  currentFile = i;
-
-  if(!openTabs.includes(i)){
-    openTabs.push(i);
-    renderTabs();
-  }
-
-  document.getElementById("editor").value = files[i].code;
-}
-
-// TABS
-function renderTabs(){
-  const tabBar = document.getElementById("tabs");
-  tabBar.innerHTML = "";
-
-  openTabs.forEach(i=>{
-    const tab = document.createElement("div");
-    tab.innerText = files[i].title;
-    tab.className = "px-3 py-1 cursor-pointer bg-gray-700 mr-1";
-    tab.onclick = ()=>openFile(i);
-    tabBar.appendChild(tab);
-  });
-}
-
-// SAVE
-async function saveFile(){
-  if(currentFile===null) return;
-
-  files[currentFile].code = document.getElementById("editor").value;
-
-  await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`,{
-    method:"PUT",
-    headers:{
-      "Content-Type":"application/json",
-      "X-Master-Key":API_KEY
-    },
-    body:JSON.stringify({codes:files})
-  });
-}
-
-// NEW FILE
-function newFile(){
-  const name = prompt("File name:");
-  if(!name) return;
-
-  files.push({title:name,code:""});
-  currentFile = files.length-1;
-  openTabs.push(currentFile);
-
-  renderTree();
-  renderTabs();
-}
-
-// RUN JS
-function runJS(){
-  try{
-    const code = document.getElementById("editor").value;
-    const result = eval(code);
-    document.getElementById("output").innerText = result || "Executed";
-  }catch(e){
-    document.getElementById("output").innerText = e;
-  }
-}
-
-// INIT
-loadFiles();
-</script>
-
+    <script src="script.js"></script>
 </body>
 </html>
